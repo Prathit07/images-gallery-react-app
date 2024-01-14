@@ -1,8 +1,9 @@
+""" GET CALL TO UNSPLASH API """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import uvicorn
-from config import UNSPLASH_API_KEY
+from api.config import UNSPLASH_API_KEY
 
 app = FastAPI()
 
@@ -22,9 +23,14 @@ app.add_middleware(
 
 @app.get("/new-image/{word}")
 async def new_image(word: str):
+    """
+    Get a random image from Unsplash API using a keyword.
+    """
     headers = {"Authorization": f"Client-ID {UNSPLASH_API_KEY}", "Accept-Version": "v1"}
     params = {"query": word}
-    response = requests.get(url=UNSPLASH_URL, headers=headers, params=params)
+    response = requests.get(
+        url=UNSPLASH_URL, headers=headers, params=params, timeout=60
+    )
     image_data = response.json()
     return image_data
 
