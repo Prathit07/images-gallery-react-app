@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import uvicorn
-from api.config import UNSPLASH_API_KEY
+from config import UNSPLASH_API_KEY
+from version import __version__ as api_version
 
-app = FastAPI()
+app = FastAPI(title="Images Gallery API",
+              version=api_version)
 
 UNSPLASH_URL = "https://api.unsplash.com/photos/random"
 
@@ -26,15 +28,22 @@ async def new_image(word: str):
     """
     Get a random image from Unsplash API using a keyword.
     """
-    headers = {"Authorization": f"Client-ID {UNSPLASH_API_KEY}", "Accept-Version": "v1"}
-    params = {"query": word}
-    response = requests.get(
-        url=UNSPLASH_URL, headers=headers, params=params, timeout=60
-    )
-    image_data = response.json()
-    return image_data
+    try:
+        headers = {
+            "Authorization": f"Client-ID {UNSPLASH_API_KEY}",
+            "Accept-Version": "v1",
+        }
+        params = {"query": word}
+        response = requests.get(
+            url=UNSPLASH_URL, headers=headers, params=params, timeout=60
+        )
+        image_data = response.json()
+        return image_data
+    except requests.exceptions.RequestException as e:
+        return {f"Error: Request to Unsplash API failed: {e}"}
 
 
 # Run the Uvicorn App
 if __name__ == "__main__":
+    # Use the below for production
     uvicorn.run(app, host="0.0.0.0", port=5050)
