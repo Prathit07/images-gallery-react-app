@@ -5,6 +5,7 @@ import Search from "./components/Search";
 import ImageCard from "./components/ImageCard";
 import Welcome from "./components/Welcome";
 import { Container, Row, Col } from "react-bootstrap";
+import axios from "axios";
 
 // API
 const API_URL = process.env.API_URL || "http://127.0.0.1:5050";
@@ -13,18 +14,15 @@ const App = () => {
   const [word, setWord] = useState("");
   const [images, setImages] = useState([]);
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
-    console.log(word);
-    fetch(`${API_URL}/new-image/${word}`)
-      .then((result) => result.json())
-      .then((data) => {
-        console.log(data);
-        setImages([{ ...data, title: word }, ...images]); // Add new images at the start to show them at the top
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    // Axios call
+    try {
+      const result = await axios.get(`${API_URL}/new-image/${word}`);
+      setImages([{ ...result.data, title: word }, ...images]);
+    } catch (error) {
+      console.log(error);
+    }
     setWord("");
   };
 
