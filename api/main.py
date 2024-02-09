@@ -29,7 +29,7 @@ gallery = mongo_client.gallery
 images_collection = gallery.images
 
 
-@app.get("/new-image/{word}")
+@app.get("/new-image/{word}", tags=["Search new image"])
 async def new_image(word: str):
     """
     Get a random image from Unsplash API using a keyword.
@@ -49,7 +49,7 @@ async def new_image(word: str):
         return {f"Error: Request to Unsplash API failed: {e}"}
 
 
-@app.get("/get-images")
+@app.get("/get-images", tags=["Get all images from MongoDB"])
 async def get_images():
     """
     Get all images from the database
@@ -62,7 +62,7 @@ async def get_images():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/post-image")
+@app.post("/post-image", tags=["Save an image in MongoDB"])
 async def post_image(request: Request):
     """
     Save the image in the database
@@ -77,6 +77,24 @@ async def post_image(request: Request):
         result = images_collection.insert_one(image_data)
         inserted_id = result.inserted_id
         return {f"Successfully inserted Id: {inserted_id}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/delete-image/{image_id}", tags=["Delete an image from MongoDB"])
+async def delete_image(image_id: str):
+    """
+    Delete the image from the database
+    """
+    try:
+        result = images_collection.delete_one({"_id": image_id})
+        if result and result.deleted_count:
+            return {f"Successfully deleted Id: {image_id}"}
+        elif not result:
+            return {f"Image with Id: {image_id} was not deleted. Please try again..."}
+        else:
+            return {f"No image found to delete with Id: {image_id}"}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
