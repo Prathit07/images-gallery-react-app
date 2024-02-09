@@ -16,8 +16,13 @@ const ImageCard = (props) => {
     <Card style={{ width: "18rem", marginTop: "20px" }}>
       <Card.Img variant="top" src={url} />
       <Card.Body>
-        <Card.Title>{title.toUpperCase()}</Card.Title>
+        <Card.Title>{title?.toUpperCase()}</Card.Title>
         <Card.Text>{description || alt_description}</Card.Text>
+        {!props.image.saved && (
+          <Button variant="secondary" onClick={() => props.saveImage(id)}>
+            Save
+          </Button>
+        )}{" "}
         <Button variant="primary" onClick={() => props.deleteImage(id)}>
           Delete
         </Button>

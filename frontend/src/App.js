@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./components/Header";
 import Search from "./components/Search";
@@ -13,6 +13,23 @@ const API_URL = process.env.API_URL || "http://127.0.0.1:5050";
 const App = () => {
   const [word, setWord] = useState("");
   const [images, setImages] = useState([]);
+
+  const getSavedImages = async () => {
+    try {
+      const result = await axios.get(`${API_URL}/get-images`);
+      setImages(result.data || []); // if data is empty, set it as an empty array
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await getSavedImages();
+    };
+
+    fetchData();
+  }, []); // empty dependency array, so it only runs once on mount
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +47,23 @@ const App = () => {
     setImages(images.filter((image) => image.id !== id)); // Keep images where the image id !== delete image id
   };
 
+  const handleSaveImage = async (id) => {
+    const imageToBeSaved = images.find((image) => image.id === id); // Find the image with the id to save in the db
+    const updatedImage = { ...imageToBeSaved, saved: true };
+    try {
+      const result = await axios.post(`${API_URL}/post-image`, updatedImage);
+      if (result.data?.inserted_id) {
+        setImages((prevImages) =>
+          prevImages.map((image) =>
+            image.id === id ? { ...image, saved: true } : image,
+          ),
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <Header title="Images Gallery" />
@@ -39,7 +73,11 @@ const App = () => {
           <Row xs={1} md={2} lg={3}>
             {images.map((image, i) => (
               <Col key={i}>
-                <ImageCard image={image} deleteImage={handleDeleteImage} />
+                <ImageCard
+                  image={image}
+                  deleteImage={handleDeleteImage}
+                  saveImage={handleSaveImage}
+                />
               </Col>
             ))}
           </Row>
