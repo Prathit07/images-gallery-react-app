@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Header from "./components/Header";
 import Search from "./components/Search";
 import ImageCard from "./components/ImageCard";
@@ -21,6 +23,7 @@ const App = () => {
       const result = await axios.get(`${API_URL}/get-images`);
       setImages(result.data || []); // if data is empty, set it as an empty array
       setLoading(false);
+      toast.success("Saved images downloaded");
     } catch (error) {
       console.log(error);
     }
@@ -40,6 +43,7 @@ const App = () => {
     try {
       const result = await axios.get(`${API_URL}/new-image/${word}`);
       setImages([{ ...result.data, title: word }, ...images]);
+      toast.info(`New image ${word.toUpperCase()} was found`);
     } catch (error) {
       console.log(error);
     }
@@ -50,6 +54,11 @@ const App = () => {
     try {
       const result = await axios.delete(`${API_URL}/delete-image/${id}`);
       if (result.data?.deleted_id) {
+        toast.warn(
+          `Image ${images
+            .find((i) => i.id === id)
+            .title.toUpperCase()} was deleted`,
+        );
         setImages(images.filter((image) => image.id !== id)); // Keep images where the image id !== delete image id
       }
     } catch (error) {
@@ -68,6 +77,7 @@ const App = () => {
             image.id === id ? { ...image, saved: true } : image,
           ),
         );
+        toast.success(`Image ${imageToBeSaved.title.toUpperCase()} was saved`);
       }
     } catch (error) {
       console.log(error);
@@ -105,6 +115,11 @@ const App = () => {
           </Container>
         </>
       )}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar
+      />
     </div>
   );
 };
